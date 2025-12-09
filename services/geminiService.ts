@@ -181,3 +181,57 @@ export const generateMarketingVideo = async (
     throw error;
   }
 };
+
+export const findTrends = async (clientIndustry: string, clientVoice: string): Promise<Trend[]> => {
+  try {
+    const ai = getAiClient();
+    const model = 'gemini-2.5-flash';
+    
+    const responseSchema: Schema = {
+      type: Type.ARRAY,
+      items: {
+        type: Type.OBJECT,
+        properties: {
+          id: { type: Type.STRING },
+          keyword: { type: Type.STRING },
+          category: { type: Type.STRING },
+          volume: { type: Type.NUMBER },
+          growth: { type: Type.NUMBER },
+          sentiment: { type: Type.STRING, enum: ['positive', 'neutral', 'negative'] },
+          description: { type: Type.STRING }
+        },
+        required: ['id', 'keyword', 'category', 'volume', 'growth', 'sentiment', 'description']
+      }
+    };
+
+    const prompt = `
+      Find 5 emerging trends in the ${clientIndustry} industry that would be relevant for a brand with a "${clientVoice}" tone of voice.
+      For each trend, provide:
+      - A unique ID (e.g., "t_gen_1").
+      - A keyword/title.
+      - A category.
+      - Estimated monthly search volume (number).
+      - Estimated growth percentage (number).
+      - General sentiment (positive, neutral, or negative).
+      - A brief description.
+    `;
+
+    const response = await ai.models.generateContent({
+      model,
+      contents: prompt,
+      config: {
+        responseMimeType: "application/json",
+        responseSchema: responseSchema,
+      }
+    });
+
+    const jsonText = response.text;
+    if (!jsonText) throw new Error("No data returned");
+    
+    return JSON.parse(jsonText) as Trend[];
+
+  } catch (error) {
+    console.error("Gemini Trend Finding Error:", error);
+    return [];
+  }
+};

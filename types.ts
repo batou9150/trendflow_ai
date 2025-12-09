@@ -30,11 +30,20 @@ export enum AnalysisStatus {
   ERROR = 'ERROR'
 }
 
+export interface HeadlineTest {
+  variants: string[];
+  winner?: string;
+  isTesting: boolean;
+  engagementStats?: Record<string, number>; // variant -> engagement score
+}
+
 export interface Campaign {
   id: string;
   name: string;
-  status: 'Draft' | 'Scheduled' | 'Published';
+  status: 'Draft' | 'Scheduled' | 'Published' | 'Testing';
   date: string;
   platform: string;
   clientId: string;
+  rolloutMode?: 'standard' | 'dynamic';
+  testDetails?: HeadlineTest;
 }

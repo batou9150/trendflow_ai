@@ -9,11 +9,30 @@ import { MOCK_CLIENTS } from './constants';
 import { ClientProfile } from './types';
 
 const App: React.FC = () => {
+  const [clients, setClients] = useState<ClientProfile[]>(MOCK_CLIENTS);
   const [activeClient, setActiveClient] = useState<ClientProfile>(MOCK_CLIENTS[0]);
+
+  const handleAddClient = (newClient: ClientProfile) => {
+    setClients([...clients, newClient]);
+    setActiveClient(newClient);
+  };
+
+  const handleEditClient = (updatedClient: ClientProfile) => {
+    setClients(clients.map(c => c.id === updatedClient.id ? updatedClient : c));
+    if (activeClient.id === updatedClient.id) {
+      setActiveClient(updatedClient);
+    }
+  };
 
   return (
     <HashRouter>
-      <Layout activeClient={activeClient} onClientChange={setActiveClient}>
+      <Layout
+        activeClient={activeClient}
+        onClientChange={setActiveClient}
+        clients={clients}
+        onAddClient={handleAddClient}
+        onEditClient={handleEditClient}
+      >
         <Routes>
           <Route path="/" element={<Dashboard />} />
           <Route path="/trends" element={<TrendSpotter activeClient={activeClient} />} />

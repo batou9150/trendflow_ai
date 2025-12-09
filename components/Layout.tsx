@@ -1,16 +1,46 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Sidebar from './Sidebar';
-import { Bell, Search, User } from 'lucide-react';
-import { MOCK_CLIENTS } from '../constants';
+import { Bell, Search, User, Plus, Edit2 } from 'lucide-react';
 import { ClientProfile } from '../types';
+import ClientModal from './ClientModal';
 
 interface LayoutProps {
   children: React.ReactNode;
   activeClient: ClientProfile;
   onClientChange: (client: ClientProfile) => void;
+  clients: ClientProfile[];
+  onAddClient: (client: ClientProfile) => void;
+  onEditClient: (client: ClientProfile) => void;
 }
 
-const Layout: React.FC<LayoutProps> = ({ children, activeClient, onClientChange }) => {
+const Layout: React.FC<LayoutProps> = ({
+  children,
+  activeClient,
+  onClientChange,
+  clients,
+  onAddClient,
+  onEditClient
+}) => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingClient, setEditingClient] = useState<ClientProfile | null>(null);
+
+  const handleOpenNew = () => {
+    setEditingClient(null);
+    setIsModalOpen(true);
+  };
+
+  const handleOpenEdit = () => {
+    setEditingClient(activeClient);
+    setIsModalOpen(true);
+  };
+
+  const handleSaveClient = (client: ClientProfile) => {
+    if (editingClient) {
+      onEditClient(client);
+    } else {
+      onAddClient(client);
+    }
+  };
   return (
     <div className="flex min-h-screen bg-slate-50 font-sans">
       <Sidebar />
@@ -18,39 +48,57 @@ const Layout: React.FC<LayoutProps> = ({ children, activeClient, onClientChange 
         {/* Header */}
         <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 sticky top-0 z-10">
           <div className="flex items-center flex-1">
-             <div className="relative w-full max-w-md hidden md:block">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                <input 
-                    type="text" 
-                    placeholder="Search trends, campaigns, or assets..." 
-                    className="w-full pl-10 pr-4 py-2 bg-slate-100 border-none rounded-full text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none"
-                />
-             </div>
+            <div className="relative w-full max-w-md hidden md:block">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+              <input
+                type="text"
+                placeholder="Search trends, campaigns, or assets..."
+                className="w-full pl-10 pr-4 py-2 bg-slate-100 border-none rounded-full text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none"
+              />
+            </div>
           </div>
 
           <div className="flex items-center space-x-6">
             <div className="flex items-center space-x-2">
-                <span className="text-xs text-slate-500 font-medium">Active Workspace:</span>
-                <select 
-                    className="text-sm font-semibold text-slate-700 bg-transparent border-none focus:ring-0 cursor-pointer"
-                    value={activeClient.id}
-                    onChange={(e) => {
-                        const client = MOCK_CLIENTS.find(c => c.id === e.target.value);
-                        if (client) onClientChange(client);
-                    }}
+              <span className="text-xs text-slate-500 font-medium">Active Workspace:</span>
+              <div className="flex items-center bg-slate-100 rounded-lg p-1">
+                <select
+                  className="text-sm font-semibold text-slate-700 bg-transparent border-none focus:ring-0 cursor-pointer py-1 pl-2 pr-8"
+                  value={activeClient.id}
+                  onChange={(e) => {
+                    const client = clients.find(c => c.id === e.target.value);
+                    if (client) onClientChange(client);
+                  }}
                 >
-                    {MOCK_CLIENTS.map(client => (
-                        <option key={client.id} value={client.id}>{client.name}</option>
-                    ))}
+                  {clients.map(client => (
+                    <option key={client.id} value={client.id}>{client.name}</option>
+                  ))}
                 </select>
+                <div className="flex items-center border-l border-slate-200 pl-1 ml-1 space-x-1">
+                  <button
+                    onClick={handleOpenEdit}
+                    className="p-1 hover:bg-white rounded-md text-slate-500 hover:text-blue-600 transition-colors"
+                    title="Edit Workspace"
+                  >
+                    <Edit2 className="w-3.5 h-3.5" />
+                  </button>
+                  <button
+                    onClick={handleOpenNew}
+                    className="p-1 hover:bg-white rounded-md text-slate-500 hover:text-green-600 transition-colors"
+                    title="New Workspace"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
             </div>
 
             <button className="relative p-2 text-slate-400 hover:text-slate-600">
-                <Bell className="w-5 h-5" />
-                <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
+              <Bell className="w-5 h-5" />
+              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
             </button>
             <div className="h-8 w-8 rounded-full bg-slate-200 flex items-center justify-center text-slate-600 overflow-hidden">
-                <User className="w-5 h-5" />
+              <User className="w-5 h-5" />
             </div>
           </div>
         </header>
@@ -60,6 +108,12 @@ const Layout: React.FC<LayoutProps> = ({ children, activeClient, onClientChange 
           {children}
         </main>
       </div>
+      <ClientModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSave={handleSaveClient}
+        initialData={editingClient}
+      />
     </div>
   );
 };

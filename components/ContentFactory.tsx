@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import { ClientProfile, GeneratedContent } from '../types';
 import { generateSocialContent, generateMarketingImage, generateMarketingVideo } from '../services/geminiService';
 import { PenTool, Loader2, Linkedin, Twitter, Instagram, Video, Copy, Check, Image as ImageIcon, Film, Upload, Download, Sparkles, Key, Lock, Globe } from 'lucide-react';
@@ -10,10 +11,17 @@ interface ContentFactoryProps {
 type TabMode = 'text' | 'image' | 'video';
 
 const ContentFactory: React.FC<ContentFactoryProps> = ({ activeClient }) => {
+    const location = useLocation();
     const [activeTab, setActiveTab] = useState<TabMode>('text');
 
     // --- Text Gen State ---
-    const [topic, setTopic] = useState('');
+    const [topic, setTopic] = useState(() => {
+        const state = location.state as { trend?: { keyword: string; description: string }; analysis?: string } | null;
+        if (state?.trend) {
+            return `Create content about: ${state.trend.keyword}\n\nContext: ${state.trend.description}\n\nStrategic Insight: ${state.analysis || ''}`;
+        }
+        return '';
+    });
     const [platforms, setPlatforms] = useState<string[]>(['LinkedIn']);
     const [language, setLanguage] = useState('English');
     const [postImage, setPostImage] = useState<string | null>(null);

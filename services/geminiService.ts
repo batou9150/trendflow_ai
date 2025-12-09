@@ -30,6 +30,7 @@ export const generateSocialContent = async (
   topic: string,
   clientVoice: string,
   platforms: string[],
+  language: string,
   image?: string // Base64 string
 ): Promise<GeneratedContent[]> => {
   try {
@@ -56,6 +57,7 @@ export const generateSocialContent = async (
       Generate content for the following topic: "${topic}".
       Target Audience: Professionals and consumers interested in this topic.
       Brand Voice: ${clientVoice}.
+      Language: ${language}.
       
       Generate unique posts for the following platforms: ${platforms.join(', ')}.
       For LinkedIn, be professional and insightful.

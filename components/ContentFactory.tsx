@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { ClientProfile, GeneratedContent } from '../types';
 import { generateSocialContent, generateMarketingImage, generateMarketingVideo } from '../services/geminiService';
-import { PenTool, Loader2, Linkedin, Twitter, Instagram, Video, Copy, Check, Image as ImageIcon, Film, Upload, Download, Sparkles, Key, Lock } from 'lucide-react';
+import { PenTool, Loader2, Linkedin, Twitter, Instagram, Video, Copy, Check, Image as ImageIcon, Film, Upload, Download, Sparkles, Key, Lock, Globe } from 'lucide-react';
 
 interface ContentFactoryProps {
     activeClient: ClientProfile;
@@ -15,6 +15,7 @@ const ContentFactory: React.FC<ContentFactoryProps> = ({ activeClient }) => {
     // --- Text Gen State ---
     const [topic, setTopic] = useState('');
     const [platforms, setPlatforms] = useState<string[]>(['LinkedIn']);
+    const [language, setLanguage] = useState('English');
     const [postImage, setPostImage] = useState<string | null>(null);
     const [textResults, setTextResults] = useState<GeneratedContent[]>([]);
     const [isTextGenerating, setIsTextGenerating] = useState(false);
@@ -69,6 +70,10 @@ const ContentFactory: React.FC<ContentFactoryProps> = ({ activeClient }) => {
         { name: 'TikTok', icon: Video },
     ];
 
+    const languages = [
+        'English', 'Spanish', 'French', 'German', 'Italian', 'Portuguese', 'Dutch', 'Chinese (Simplified)', 'Japanese'
+    ];
+
     const togglePlatform = (p: string) => {
         setPlatforms(prev =>
             prev.includes(p) ? prev.filter(item => item !== p) : [...prev, p]
@@ -80,7 +85,7 @@ const ContentFactory: React.FC<ContentFactoryProps> = ({ activeClient }) => {
         setIsTextGenerating(true);
         setTextResults([]);
 
-        const data = await generateSocialContent(topic, activeClient.voice, platforms, postImage || undefined);
+        const data = await generateSocialContent(topic, activeClient.voice, platforms, language, postImage || undefined);
         setTextResults(data);
         setIsTextGenerating(false);
     };
@@ -195,8 +200,8 @@ const ContentFactory: React.FC<ContentFactoryProps> = ({ activeClient }) => {
                             setNeedsApiKey(false); // Reset prompt on tab switch
                         }}
                         className={`flex items-center space-x-2 pb-4 border-b-2 font-medium transition-all ${activeTab === tab.id
-                                ? 'border-brand-600 text-brand-700'
-                                : 'border-transparent text-slate-500 hover:text-slate-700'
+                            ? 'border-brand-600 text-brand-700'
+                            : 'border-transparent text-slate-500 hover:text-slate-700'
                             }`}
                     >
                         <tab.icon className="w-4 h-4" />
@@ -255,8 +260,8 @@ const ContentFactory: React.FC<ContentFactoryProps> = ({ activeClient }) => {
                                             key={p.name}
                                             onClick={() => togglePlatform(p.name)}
                                             className={`flex items-center space-x-2 px-4 py-2 rounded-full border transition-all ${isSelected
-                                                    ? 'bg-brand-50 border-brand-500 text-brand-700'
-                                                    : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
+                                                ? 'bg-brand-50 border-brand-500 text-brand-700'
+                                                : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
                                                 }`}
                                         >
                                             <p.icon className="w-4 h-4" />
@@ -276,8 +281,8 @@ const ContentFactory: React.FC<ContentFactoryProps> = ({ activeClient }) => {
                                 onClick={handleGenerateText}
                                 disabled={isTextGenerating || !topic || platforms.length === 0}
                                 className={`flex items-center px-8 py-3 rounded-lg font-medium text-white transition-all ${isTextGenerating || !topic
-                                        ? 'bg-slate-300 cursor-not-allowed'
-                                        : 'bg-brand-600 hover:bg-brand-700 shadow-md hover:shadow-lg'
+                                    ? 'bg-slate-300 cursor-not-allowed'
+                                    : 'bg-brand-600 hover:bg-brand-700 shadow-md hover:shadow-lg'
                                     }`}
                             >
                                 {isTextGenerating ? (
@@ -324,6 +329,22 @@ const ContentFactory: React.FC<ContentFactoryProps> = ({ activeClient }) => {
                             </div>
                         ))}
                     </div>
+
+                    <div>
+                        <label className="block text-sm font-medium text-slate-700 mb-2">Output Language</label>
+                        <div className="relative">
+                            <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                            <select
+                                value={language}
+                                onChange={(e) => setLanguage(e.target.value)}
+                                className="w-full pl-10 p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:outline-none appearance-none bg-white"
+                            >
+                                {languages.map(lang => (
+                                    <option key={lang} value={lang}>{lang}</option>
+                                ))}
+                            </select>
+                        </div>
+                    </div>
                 </div>
             )}
 
@@ -358,8 +379,8 @@ const ContentFactory: React.FC<ContentFactoryProps> = ({ activeClient }) => {
                                     onClick={handleGenerateImage}
                                     disabled={isImageGenerating || !imagePrompt}
                                     className={`w-full flex justify-center items-center px-4 py-3 rounded-lg font-medium text-white transition-all ${isImageGenerating || !imagePrompt
-                                            ? 'bg-slate-300 cursor-not-allowed'
-                                            : 'bg-brand-600 hover:bg-brand-700 shadow-md'
+                                        ? 'bg-slate-300 cursor-not-allowed'
+                                        : 'bg-brand-600 hover:bg-brand-700 shadow-md'
                                         }`}
                                 >
                                     {isImageGenerating ? (
@@ -456,8 +477,8 @@ const ContentFactory: React.FC<ContentFactoryProps> = ({ activeClient }) => {
                                     onClick={handleGenerateVideo}
                                     disabled={isVideoGenerating || !videoFile}
                                     className={`w-full flex justify-center items-center px-4 py-3 rounded-lg font-medium text-white transition-all ${isVideoGenerating || !videoFile
-                                            ? 'bg-slate-300 cursor-not-allowed'
-                                            : 'bg-brand-600 hover:bg-brand-700 shadow-md'
+                                        ? 'bg-slate-300 cursor-not-allowed'
+                                        : 'bg-brand-600 hover:bg-brand-700 shadow-md'
                                         }`}
                                 >
                                     {isVideoGenerating ? (

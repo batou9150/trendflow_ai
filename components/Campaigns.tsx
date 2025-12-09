@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { MOCK_CAMPAIGNS } from '../constants';
 import { ClientProfile, Campaign } from '../types';
-import { Calendar as CalendarIcon, MoreVertical, Clock, CheckCircle, CircleDashed, Plus, X, TestTube, Activity, Sparkles, Twitter, Linkedin } from 'lucide-react';
+import { Calendar as CalendarIcon, MoreVertical, Clock, CheckCircle, CircleDashed, Plus, X, TestTube, Activity, Sparkles, Twitter, Linkedin, Trash2, Send, AlertCircle } from 'lucide-react';
 
 interface CampaignsProps {
     activeClient: ClientProfile;
@@ -11,6 +11,7 @@ const Campaigns: React.FC<CampaignsProps> = ({ activeClient }) => {
     // Initialize with mock data, but allow adding new ones
     const [allCampaigns, setAllCampaigns] = useState<Campaign[]>(MOCK_CAMPAIGNS);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [activeDropdownId, setActiveDropdownId] = useState<string | null>(null);
 
     // Form State
     const [formData, setFormData] = useState({
@@ -84,6 +85,16 @@ const Campaigns: React.FC<CampaignsProps> = ({ activeClient }) => {
 
     const activeCampaigns = allCampaigns.filter(c => c.clientId === activeClient.id);
 
+    const handleDelete = (id: string) => {
+        setAllCampaigns(prev => prev.filter(c => c.id !== id));
+        setActiveDropdownId(null);
+    };
+
+    const handlePromoteNow = (id: string) => {
+        finishTest(id);
+        setActiveDropdownId(null);
+    };
+
     const handleSave = () => {
         if (!formData.name) return;
 
@@ -151,7 +162,7 @@ const Campaigns: React.FC<CampaignsProps> = ({ activeClient }) => {
                 </button>
             </div>
 
-            <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
+            <div className="bg-white rounded-xl border border-slate-200 shadow-sm">
                 <table className="w-full text-left">
                     <thead className="bg-slate-50 border-b border-slate-200">
                         <tr>
@@ -206,9 +217,41 @@ const Campaigns: React.FC<CampaignsProps> = ({ activeClient }) => {
                                         {camp.date}
                                     </td>
                                     <td className="px-6 py-4">
-                                        <button className="p-1 hover:bg-slate-200 rounded text-slate-400 hover:text-slate-600 transition-colors">
-                                            <MoreVertical className="w-4 h-4" />
-                                        </button>
+                                        <div className="relative">
+                                            <button
+                                                onClick={() => setActiveDropdownId(activeDropdownId === camp.id ? null : camp.id)}
+                                                className="p-1 hover:bg-slate-200 rounded text-slate-400 hover:text-slate-600 transition-colors"
+                                            >
+                                                <MoreVertical className="w-4 h-4" />
+                                            </button>
+
+                                            {activeDropdownId === camp.id && (
+                                                <>
+                                                    <div
+                                                        className="fixed inset-0 z-10"
+                                                        onClick={() => setActiveDropdownId(null)}
+                                                    />
+                                                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-slate-100 z-20 py-1 animate-in fade-in zoom-in-95 duration-100">
+                                                        {camp.status === 'Testing' && (
+                                                            <button
+                                                                onClick={() => handlePromoteNow(camp.id)}
+                                                                className="w-full text-left px-4 py-2 text-sm text-brand-600 hover:bg-brand-50 flex items-center"
+                                                            >
+                                                                <Sparkles className="w-4 h-4 mr-2" />
+                                                                Promote Winner Now
+                                                            </button>
+                                                        )}
+                                                        <button
+                                                            onClick={() => handleDelete(camp.id)}
+                                                            className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center"
+                                                        >
+                                                            <Trash2 className="w-4 h-4 mr-2" />
+                                                            Delete Campaign
+                                                        </button>
+                                                    </div>
+                                                </>
+                                            )}
+                                        </div>
                                     </td>
                                 </tr>
                             ))

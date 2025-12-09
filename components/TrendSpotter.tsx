@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { MOCK_TRENDS } from '../constants';
 import { Trend, ClientProfile } from '../types';
 import { analyzeTrendRelevance, findTrends } from '../services/geminiService';
@@ -9,6 +10,7 @@ interface TrendSpotterProps {
 }
 
 const TrendSpotter: React.FC<TrendSpotterProps> = ({ activeClient }) => {
+  const navigate = useNavigate();
   const [selectedTrend, setSelectedTrend] = useState<Trend | null>(null);
   const [analysis, setAnalysis] = useState<string>('');
   const [loading, setLoading] = useState(false);
@@ -36,6 +38,16 @@ const TrendSpotter: React.FC<TrendSpotterProps> = ({ activeClient }) => {
         setDisplayTrends(newTrends);
     }
     setSearching(false);
+  };
+
+  const handleCreateContent = () => {
+    if (!selectedTrend) return;
+    navigate('/create', { 
+        state: { 
+            trend: selectedTrend,
+            analysis: analysis 
+        } 
+    });
   };
 
   return (
@@ -144,10 +156,13 @@ const TrendSpotter: React.FC<TrendSpotterProps> = ({ activeClient }) => {
 
                 {!loading && (
                     <div className="flex justify-end">
-                        <a href="#/create" className="flex items-center space-x-2 bg-brand-600 text-white px-6 py-3 rounded-lg hover:bg-brand-700 transition-colors">
+                        <button 
+                            onClick={handleCreateContent}
+                            className="flex items-center space-x-2 bg-brand-600 text-white px-6 py-3 rounded-lg hover:bg-brand-700 transition-colors"
+                        >
                             <span>Create Content for this Trend</span>
                             <ArrowRight className="w-4 h-4" />
-                        </a>
+                        </button>
                     </div>
                 )}
             </div>

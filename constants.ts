@@ -2,6 +2,13 @@ import { ClientProfile, Trend, Campaign } from './types';
 
 export const MOCK_CLIENTS: ClientProfile[] = [
   {
+    id: 'c0',
+    name: 'SFEIR',
+    industry: 'Service',
+    voice: 'Professional, Visionary, Disruptive, DeepImpact',
+    avatar: 'https://picsum.photos/id/1/200/200'
+  },
+  {
     id: 'c1',
     name: 'TechNova Solutions',
     industry: 'SaaS',

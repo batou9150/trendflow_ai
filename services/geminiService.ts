@@ -29,12 +29,13 @@ export const analyzeTrendRelevance = async (trend: Trend, clientVoice: string, c
 export const generateSocialContent = async (
   topic: string,
   clientVoice: string,
-  platforms: string[]
+  platforms: string[],
+  image?: string // Base64 string
 ): Promise<GeneratedContent[]> => {
   try {
     const ai = getAiClient();
     const model = 'gemini-2.5-flash';
-    
+
     // Define the schema using the Type enum from the SDK
     const responseSchema: Schema = {
       type: Type.ARRAY,
@@ -60,11 +61,24 @@ export const generateSocialContent = async (
       For LinkedIn, be professional and insightful.
       For Twitter, be punchy and thread-like if needed.
       For Instagram/TikTok, focus on visual descriptions or script hooks.
+      ${image ? "An image has been provided. Use the visual details from the image to enhance the content description and caption." : ""}
     `;
+
+    const parts: any[] = [{ text: prompt }];
+    if (image) {
+      const base64Data = image.split(',')[1];
+      const mimeType = image.split(';')[0].split(':')[1];
+      parts.push({
+        inlineData: {
+          mimeType,
+          data: base64Data
+        }
+      });
+    }
 
     const response = await ai.models.generateContent({
       model,
-      contents: prompt,
+      contents: { parts },
       config: {
         responseMimeType: "application/json",
         responseSchema: responseSchema,
@@ -73,7 +87,7 @@ export const generateSocialContent = async (
 
     const jsonText = response.text;
     if (!jsonText) throw new Error("No data returned");
-    
+
     return JSON.parse(jsonText) as GeneratedContent[];
 
   } catch (error) {
@@ -94,7 +108,7 @@ export const generateMarketingImage = async (
   try {
     const ai = getAiClient();
     const model = 'gemini-3-pro-image-preview';
-    
+
     const response = await ai.models.generateContent({
       model,
       contents: {
